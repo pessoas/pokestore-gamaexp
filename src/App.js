@@ -1,63 +1,44 @@
 import React, {useState, useEffect} from 'react';
 
+import Card from './components/Card';
+
 const baseURL = 'https://pokeapi.co/api/v2/pokemon/'
 
 
 export const App = () => {
-  const [pokemon, setPokemon] = useState([])
-  const [pokeStats, setPokeStats] = useState()
+  const [allPokemon, setAllPokemon] = useState([])
 
   useEffect(() =>{
-    const fetchPokemon = async (name) => {
-      const response = await fetch(baseURL + name)
-      const data = await response.json();
-      return await data
+    
+    const initialize = async (poke) => {
+      const response = await fetch(poke.url)
+      const pokemon = await response.json()
+      //console.log(pokem)
+      
+      return pokemon
     }
 
-    const initialize = async (name) => {
-      const poke = await fetchPokemon(name)
-      setPokemon(poke)
-      console.log(poke)
-      const stats = poke.stats
-      //console.log(stats[0].base_stat)
-      setPokeStats(stats)
+    const fetchAll = async () => {
+      const response = await fetch(`${baseURL}?limit=20`)
+      const listaPokemon = await response.json()
+      //console.log(listaPokemon)
+      listaPokemon.results.map(async element => {
+        let nextPokemon = await initialize(element)
+        setAllPokemon(allPokemon => [...allPokemon, nextPokemon])
+      });
+      
     }
 
-    initialize('charmander')
+    fetchAll()
   },[])
 
-  const statList = () => {
-    return (
-      <ul>
-        {pokeStats.map(stat => (
-          <li key={stat.stat.name}>{stat.stat.name}: {stat.base_stat}</li>
-        ))}
-      </ul>
-    )
-  }
-
-  const price = () => {
-    let valorInicial = 0
-    let soma = pokeStats.reduce((acumulator, valorAtual) =>acumulator + valorAtual.base_stat, valorInicial)
-    return (
-      <p>R$: {soma}</p>
-    )
-  }
-
-  const card = () => {
-    return (
-      <div>
-        <h1>{pokemon.name}</h1>
-        <img src={pokemon.sprites ? pokemon.sprites.front_default : ''} alt="pokemon" />
-        {pokeStats ? statList() : ''}
-        {pokeStats ? price() : ''}
-      </div>
-    )
-  }
-
-
+  //allPokemon ? console.log(allPokemon) : console.log('')
   return (
-    card()
+    <div>
+      {allPokemon.map((pokemon) =>
+        <Card pokemon={pokemon} pokeStats={pokemon.stats} key={pokemon.name}/>
+      )}
+    </div>
   );
 }
 
