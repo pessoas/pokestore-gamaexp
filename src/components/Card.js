@@ -16,7 +16,7 @@ const Card = ({pokemon, pokeStats}) => {
     let valorInicial = 0
     let soma = pokeStats.reduce((acumulator, valorAtual) =>acumulator + valorAtual.base_stat, valorInicial)
     return (
-      <p>R$: {soma}</p>
+      <p>R$: {soma},00</p>
     )
   }
 
