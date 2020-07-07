@@ -37,21 +37,23 @@ export const App = () => {
   const handleClick = async(pokemon) => {
     let valorInicial = 0
     let soma = pokemon.stats.reduce((acumulator, valorAtual) => acumulator + valorAtual.base_stat, valorInicial)
-    soma += total
-    setTotal(soma)
+    
     
     let index = cart.findIndex(item => item.name === pokemon.name)
 
     if(index !== -1){
       cart[index].quantity++
+      cart[index].value += soma
     }else{
       let newItem = {
         name: pokemon.name,
-        quantity: 1
+        quantity: 1,
+        value: soma
       }
       setcart(cart => [...cart, newItem])
     }
-
+    soma += total
+    setTotal(soma)
     //setcart(cart => [...cart, pokemon.name])
   }
 
@@ -70,7 +72,7 @@ export const App = () => {
         <h4>CARRINHO</h4>
         <ul>
           {cart.map((item) => 
-          <li key={item.name}>{item.name} x{item.quantity}</li>)}
+          <li key={item.name}>{item.name} x{item.quantity}: {item.value}</li>)}
         </ul>
         <p>TOTAL R$: {total},00</p>
         <button onClick={() => handlecart()}>Finalizar compra</button>
