@@ -10,6 +10,27 @@ export const App = () => {
   const [total, setTotal] = useState(0)
   const [cart, setcart] = useState([])
 
+  const itemsPerPage = 20
+  const [currentPage, setCurrentPage] = useState(1)
+  const maxPage = Math.ceil(allPokemon.length / itemsPerPage)
+
+  function nextPage() {
+    setCurrentPage((currentPage) => Math.min(currentPage + 1, maxPage))
+  }
+  function previousPage() {
+    setCurrentPage((currentPage) => Math.max(currentPage - 1, maxPage))
+  }
+  function jump(page) {
+    const pageNumber = Math.max(1, page)
+    setCurrentPage((currentPage) => Math.min(pageNumber, maxPage))
+  }
+
+  function currentData() {
+    const begin = (currentPage - 1) * itemsPerPage
+    const end = begin + itemsPerPage
+    return allPokemon.slice(begin, end)
+  }
+
   useEffect(() =>{
     
     const initialize = async (poke) => {
@@ -21,9 +42,9 @@ export const App = () => {
     }
 
     const fetchAll = async () => {
-      const response = await fetch(`${baseURL}?limit=20`)
+      const response = await fetch(`${baseURL}?limit=151`)
       const listaPokemon = await response.json()
-      //console.log(listaPokemon)
+      console.log(listaPokemon)
       listaPokemon.results.map(async element => {
         let nextPokemon = await initialize(element)
         setAllPokemon(allPokemon => [...allPokemon, nextPokemon])
@@ -78,12 +99,16 @@ export const App = () => {
         <button onClick={() => handlecart()}>Finalizar compra</button>
       </div>
       
-      {allPokemon.map((pokemon) =>
+      {currentData().map((pokemon) =>
         <div key={pokemon.name}>
           <Card pokemon={pokemon} pokeStats={pokemon.stats}/>
-          <button onClick={() => handleClick(pokemon)}>Comprar</button>
+          <button onClick={() => handleClick(pokemon)}>Adicionar ao carrinho</button>
         </div>
       )}
+      <div>
+        <button onClick={() => nextPage()}>Anterior</button>
+        <button onClick={() => previousPage()}>Proximo</button>
+      </div>
     </div>
   );
 }
