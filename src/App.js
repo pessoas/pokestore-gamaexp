@@ -1,6 +1,8 @@
 import React, {useState, useEffect} from 'react';
 
-import Card from './components/Card';
+import PokemonCard from './components/PokemonCard';
+import CartCard from './components/CartCard'
+import Pagination from './components/Pagination'
 
 const baseURL = 'https://pokeapi.co/api/v2/pokemon/'
 
@@ -10,26 +12,8 @@ export const App = () => {
   const [total, setTotal] = useState(0)
   const [cart, setcart] = useState([])
 
-  const itemsPerPage = 20
+  const [itemsPerPage] = useState(15)
   const [currentPage, setCurrentPage] = useState(1)
-  const maxPage = Math.ceil(allPokemon.length / itemsPerPage)
-
-  function nextPage() {
-    setCurrentPage((currentPage) => Math.min(currentPage + 1, maxPage))
-  }
-  function previousPage() {
-    setCurrentPage((currentPage) => Math.max(currentPage - 1, maxPage))
-  }
-  function jump(page) {
-    const pageNumber = Math.max(1, page)
-    setCurrentPage((currentPage) => Math.min(pageNumber, maxPage))
-  }
-
-  function currentData() {
-    const begin = (currentPage - 1) * itemsPerPage
-    const end = begin + itemsPerPage
-    return allPokemon.slice(begin, end)
-  }
 
   useEffect(() =>{
     
@@ -55,10 +39,17 @@ export const App = () => {
     fetchAll()
   },[])
 
+//pagination
+  const indexOfLastPokemon = currentPage * itemsPerPage
+  const indexOfFirstPokemon = indexOfLastPokemon - itemsPerPage
+  const currentPokemons = allPokemon.slice(indexOfFirstPokemon, indexOfLastPokemon)
+
+  const paginate = (pageNumber) => setCurrentPage(pageNumber)
+
+//Handle buttons
   const handleClick = async(pokemon) => {
     let valorInicial = 0
     let soma = pokemon.stats.reduce((acumulator, valorAtual) => acumulator + valorAtual.base_stat, valorInicial)
-    
     
     let index = cart.findIndex(item => item.name === pokemon.name)
 
@@ -78,7 +69,7 @@ export const App = () => {
     //setcart(cart => [...cart, pokemon.name])
   }
 
-  const handlecart = async() => {
+  const handleCart = async() => {
     setTotal(0)
     setcart([])
     return(
@@ -88,27 +79,25 @@ export const App = () => {
 
   //allPokemon ? console.log(allPokemon) : console.log('')
   return (
-    <div>
-      <div>
-        <h4>CARRINHO</h4>
-        <ul>
-          {cart.map((item) => 
-          <li key={item.name}>{item.name} x{item.quantity}: {item.value}</li>)}
-        </ul>
-        <p>TOTAL R$: {total},00</p>
-        <button onClick={() => handlecart()}>Finalizar compra</button>
-      </div>
-      
-      {currentData().map((pokemon) =>
-        <div key={pokemon.name}>
-          <Card pokemon={pokemon} pokeStats={pokemon.stats}/>
-          <button onClick={() => handleClick(pokemon)}>Adicionar ao carrinho</button>
+    <div className='container-fluid mt-4'>
+      <h1 className='text-primary m-3'>Kanto PokeStore</h1>
+      <div className='row'>
+        <div className='col-md-8'>
+          <div className='row'>
+            {currentPokemons.map((pokemon) =>
+                <PokemonCard pokemon={pokemon} pokeStats={pokemon.stats} addToCart={handleClick} key={pokemon.name}/>
+            )}
+          </div>
         </div>
-      )}
-      <div>
-        <button onClick={() => nextPage()}>Anterior</button>
-        <button onClick={() => previousPage()}>Proximo</button>
+        <div className='col-md-2'>
+          <CartCard cart={cart} total={total} handleCart={handleCart} />
+        </div>
       </div>
+      <Pagination 
+        itemsPerPage={itemsPerPage} 
+        totalPokemons={allPokemon.length} 
+        paginate={paginate}
+      />
     </div>
   );
 }
